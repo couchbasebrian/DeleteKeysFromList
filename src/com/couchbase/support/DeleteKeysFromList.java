@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
 import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.document.JsonDocument;
+import com.couchbase.client.java.document.json.JsonObject;
 import com.couchbase.client.java.env.DefaultCouchbaseEnvironment;
 
 // December 2, 2016
@@ -77,7 +79,7 @@ public class DeleteKeysFromList {
 		boolean keyDeleteSuccess = false;
 		long documentsThatShouldBeDeleted = 0, successfulDeletes = 0;
 
-
+		// Main loop over the keys
 		for (int i = 0; i < listOfKeys.size(); i++) {
 			String eachKey = listOfKeys.get(i);
 			System.out.println("Working on key #" + i + " : "+ eachKey);
@@ -89,7 +91,6 @@ public class DeleteKeysFromList {
 					successfulDeletes++;
 				}
 			}
-
 		}
 
 		System.out.println("Done processing key list.");
@@ -106,10 +107,44 @@ public class DeleteKeysFromList {
 	} // main()
 
 
+	// This is where your application specific deletion logic goes
 	static boolean shouldDocumentBeDeleted(Bucket bucket, String eachKey) {
+
+		// You could change this to true, which will delete any document on the list
 		boolean rval = false;
 
+		// Your document fields go here
+		String jsonStringFieldName = "stringPropertyName";
+		String jsonIntFieldName    = "intPropertyName";
+
 		// get the document and examine it
+		JsonDocument eachDocument = bucket.get(eachKey);
+
+		// First, does this document exist?
+		if (eachDocument != null) {
+			JsonObject eachJsonObject = eachDocument.content();
+
+			// You might be interested in a string field, or perhaps an integer field
+			String s = eachJsonObject.getString(jsonStringFieldName);
+			Integer i = eachJsonObject.getInt(jsonIntFieldName);
+
+			// Perhaps we should delete this document if the string matches another string
+			if ((s != null) && (s.equals("A certain string"))) {
+				rval = true;
+			}
+
+			// Perhaps we should delete this document if the integer is above a certain amount
+			int aLargeValue = 3342423;
+			if (i != null) {
+				int iInt = i.intValue();
+				if (iInt > aLargeValue) {
+					rval = true;
+				}
+			}
+
+			// Done with checks for this document
+
+		}
 
 		return rval;
 	}
@@ -162,7 +197,7 @@ public class DeleteKeysFromList {
 		}
 
 		return returnValue;
-		
+
 	} // getListOfKeysFromFile
 
 
