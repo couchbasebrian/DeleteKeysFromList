@@ -80,6 +80,7 @@ public class DeleteKeysFromList {
 		long documentsThatShouldBeDeleted = 0, successfulDeletes = 0;
 
 		// Main loop over the keys
+		t1 = System.currentTimeMillis();		
 		for (int i = 0; i < listOfKeys.size(); i++) {
 			String eachKey = listOfKeys.get(i);
 			System.out.println("Working on key #" + i + " : "+ eachKey);
@@ -92,8 +93,9 @@ public class DeleteKeysFromList {
 				}
 			}
 		}
+		t2 = System.currentTimeMillis();
 
-		System.out.println("Done processing key list.");
+		System.out.println("Done processing key list in " + (t2 - t1) + " ms.");
 
 		System.out.println("Total number of keys:                  " + listOfKeys.size());
 		System.out.println("Number that matched deletion criteria: " + documentsThatShouldBeDeleted);
