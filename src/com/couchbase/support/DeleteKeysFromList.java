@@ -16,6 +16,8 @@ public class DeleteKeysFromList {
 
 	public static void main(String[] args) {
 
+		long t1 = 0, t2 = 0;
+
 		String host = "", bucketName = "", password = "", inputFileName = "";
 
 		// check to see if we were given arguments
@@ -42,10 +44,15 @@ public class DeleteKeysFromList {
 			System.out.println("Not using a bucket password");
 		}
 
+		// 10 seconds
+		long timeoutInMilliseconds = 10000;
+
+		t1 = System.currentTimeMillis();
+
 		DefaultCouchbaseEnvironment.Builder builder = DefaultCouchbaseEnvironment.builder();
-		builder.connectTimeout(1000);
-		builder.viewTimeout(1000);
-		builder.queryTimeout(10);
+		builder.connectTimeout(timeoutInMilliseconds);
+		builder.viewTimeout(timeoutInMilliseconds);
+		builder.queryTimeout(timeoutInMilliseconds);
 		DefaultCouchbaseEnvironment environment = builder.build();
 
 		Bucket bucket = null;
@@ -56,12 +63,16 @@ public class DeleteKeysFromList {
 			bucket = cluster.openBucket(bucketName, password);
 		}
 
-		System.out.println("Cluster and bucket connections established.");
+		t2 = System.currentTimeMillis();
 
-		// Open the file
+		System.out.println("Cluster and bucket connections established in " + (t2 - t1) + " ms.");
+
+		// Open the file and read it into memory
+		t1 = System.currentTimeMillis();
 		ArrayList<String> listOfKeys = getListOfKeysFromFile(inputFileName);
+		t2 = System.currentTimeMillis();
 
-		System.out.println("I have read " + listOfKeys.size() + " into memory and will start processing them now.");
+		System.out.println("I have read " + listOfKeys.size() + " keys into memory in " + (t2 - t1) + " ms and will start processing them now.");
 
 		boolean keyDeleteSuccess = false;
 		long documentsThatShouldBeDeleted = 0, successfulDeletes = 0;
@@ -69,7 +80,7 @@ public class DeleteKeysFromList {
 
 		for (int i = 0; i < listOfKeys.size(); i++) {
 			String eachKey = listOfKeys.get(i);
-			System.out.println("Working on key: " + eachKey);
+			System.out.println("Working on key #" + i + " : "+ eachKey);
 
 			if (shouldDocumentBeDeleted(bucket, eachKey)) {
 				documentsThatShouldBeDeleted++;
@@ -137,24 +148,22 @@ public class DeleteKeysFromList {
 				returnValue.add(sCurrentLine);			
 			}
 		} catch (IOException e) {
+			System.out.println("Exception when trying to read the list of keys from the file.");
 			e.printStackTrace();
 		} finally {
 			try {
-				if (br != null)
-					br.close();
-
-				if (fr != null)
-					fr.close();
+				if (br != null) br.close();
+				if (fr != null) fr.close();
 
 			} catch (IOException ex) {
-
+				System.out.println("Exception when trying to read the list of keys from the file ( in the finally clause )");
 				ex.printStackTrace();
-
 			}
 		}
 
 		return returnValue;
-	}
+		
+	} // getListOfKeysFromFile
 
 
 } // DeleteKeysFromList
