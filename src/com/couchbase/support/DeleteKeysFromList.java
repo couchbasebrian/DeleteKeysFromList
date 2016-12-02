@@ -107,7 +107,7 @@ public class DeleteKeysFromList {
 
 
 	static boolean shouldDocumentBeDeleted(Bucket bucket, String eachKey) {
-		boolean rval = true;
+		boolean rval = false;
 
 		// get the document and examine it
 
